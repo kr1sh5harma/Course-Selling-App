@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const courseRouter = Router();
 
-courseRouter.get("/course/purchase", function (req, res) {
+courseRouter.get("/purchase", function (req, res) {
     res.json({
         message: ""
     })
@@ -9,7 +9,7 @@ courseRouter.get("/course/purchase", function (req, res) {
 
 
 
-courseRouter.get("/course/preview", function (req, res) {
+courseRouter.get("/preview", function (req, res) {
     res.json({
         message: "courses endpoint"
     })

@@ -5,11 +5,12 @@ const app = express();
 
 
 app.use("/api/v1/user", userRouter);
+app.use("api/v1/admin", userRouter);
 app.use("/api/v1/course", courseRouter);
 
 
-createUserRoutes(app);
-createCourseRoutes(app);
+// createUserRoutes(app);
+// createCourseRoutes(app);
 
 
 

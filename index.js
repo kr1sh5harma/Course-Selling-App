@@ -4,8 +4,8 @@ const { courseRouter } = require("./routes/course")
 const app = express();
 
 
-app.use("/user", userRouter);
-app.use("/course", courseRouter);
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/course", courseRouter);
 
 
 createUserRoutes(app);

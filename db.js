@@ -1,6 +1,4 @@
-const {mongoose} = require("mongoose");
-console.log("connected to db");
-mongoose.connect("mongodb+srv://krish9515274:K_5h4rm417dec@cluster0.6mwwk9o.mongodb.net/coursera-app");
+const mongoose = require("mongoose");
 
 
 const Schema = mongoose.Schema;

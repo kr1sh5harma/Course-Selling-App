@@ -1,4 +1,4 @@
-const {Schema, default:mongoose} = require("mongoose");
+const {mongoose} = require("mongoose");
 console.log("connected to db");
 mongoose.connect("mongodb+srv://krish9515274:K_5h4rm417dec@cluster0.6mwwk9o.mongodb.net/coursera-app");
 
@@ -11,7 +11,7 @@ const userSchema = new Schema({
     email: {type:String, unique:true},
     password: String,
     firstName: String,
-    lastname: SVGFESpecularLightingElement
+    lastname: String
 
 });
 

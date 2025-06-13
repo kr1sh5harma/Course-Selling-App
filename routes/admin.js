@@ -31,3 +31,7 @@ adminRouter.get('/course', function(req,res){
         message: ""
     })
 })
+
+module.exports = {
+    adminRouter
+}

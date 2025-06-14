@@ -4,7 +4,8 @@ const bcrypt = require("bcrypt");
 const userRouter = Router();    
 const z = require('zod');
 const jwt = require('jsonwebtoken');
-const {JWT_USER_PASSWORD} = require("../config");
+// const {JWT_USER_PASSWORD} = require("../config");
+const JWT_USER_PASSWORD = "user123";
 
 
 //post router for user to signup
@@ -13,7 +14,7 @@ userRouter.post("/signup", async function (req, res) {
     const requireBody = z.object({
         email: z.string().min(3).max(100).email(),
         password: z.string().min(6).max(100),
-        fistName: z.string().min(3).max(30),
+        firstName: z.string().min(3).max(30),
         lastName: z.string().min(3).max(30)
     })
 
@@ -29,7 +30,7 @@ userRouter.post("/signup", async function (req, res) {
     }
 
     //extracting validated email, password, firstName and lastName from the request body
-    const {email, password, firstName, lastName} =req.body;
+    const {email, password, firstName, lastName} = req.body;
 
     //hash the users password using the bcrypt with a salt rounds of 5
     const hashedPassword = await bcrypt.hash(password, 5);
@@ -48,12 +49,7 @@ userRouter.post("/signup", async function (req, res) {
         return res.status(400).json({
             message: "you are already signed up"
         })
-    }
-
-    //send a success message to user if everything worked fine
-    res.json({
-        message:"sign up successfull"
-    });
+    } 
 })
 
 //POST router for user signin 
@@ -112,36 +108,60 @@ userRouter.post("/signin",async function (req, res) {
             message: "invalid credentials!"
         })
     }
+
+    // const{email,password} = req.body;
+
+    // const user = await userModel.findOne({
+    //     email:email,
+    //     password:password
+    // })
+
+    // if(user){
+    //     const token = jwt.sign({
+    //         id:user._id
+    //     },JWT_USER_PASSWORD);
+
+    //     res.json({
+    //         token:token
+    //     })
+    // }
+    // else{
+    //     res.status(403).json({
+    //         message:"incorrect credentials"
+    //     })
+    // }
+
+
 });
 
 
 //GET route for purchases of user
-userRouter.get("/purchases",userMiddleware,async function (req, res) {
-    const userId = req.userId;
-    const purchases = await purchaseModel.find({
-        userId: userId,
-    })
+// userRouter.get("/purchases",userMiddleware,async function (req, res) {
+//     const userId = req.userId;
+//     const purchases = await purchaseModel.find({
+//         userId: userId,
+//     })
 
-    if(!purchases){
-        return res.status(404).json({
-            message: "No purchases found",
-        });
-    }
+//     if(!purchases){
+//         return res.status(404).json({
+//             message: "No purchases found",
+//         });
+//     }
 
-    //if purchases are found, extract the courseIds from the found purchases
-    const purchasesCourseIds = purchases.map((purchase) => purchase.courseId);
+//     //if purchases are found, extract the courseIds from the found purchases
+//     const purchasesCourseIds = purchases.map((purchase) => purchase.courseId);
 
-    //find all course details associated with the courseIds 
-    const courseData = await courseModel.find({
-        _id: {$in:purchasesCourseIds},
-    });
+//     //find all course details associated with the courseIds 
+//     const courseData = await courseModel.find({
+//         _id: {$in:purchasesCourseIds},
+//     });
 
-    //send the purchases and corresponding course details back to the client 
-    res.status(200).json({
-        purchases,
-        courseData,
-    });
-});
+//     //send the purchases and corresponding course details back to the client 
+//     res.status(200).json({
+//         purchases,
+//         courseData,
+//     });
+// });
 
 
 

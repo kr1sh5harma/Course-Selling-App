@@ -46,10 +46,11 @@ A backend project for a course selling website built using **Node.js**, **Expres
 
 1. **Clone the repository**
 2. **npm install** to Install dependencies
-3. **create .env file** - MONGO_URI=your_mongodb_connection_string
-                        - JWT_SECRET=your_secret_key
-                        - PORT=your_local_port_number
-4. **Start the server** - npm start or npm run dev
+3. **create .env file** 
+   - `MONGO_URI=your_mongodb_connection_string`
+   - `JWT_SECRET=your_secret_key`
+   - `PORT=your_local_port_number`
+5. **Start the server** - npm start or npm run dev
 
 
 ## 🙋‍♂️ Author

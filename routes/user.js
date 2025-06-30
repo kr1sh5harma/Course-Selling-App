@@ -1,170 +1,161 @@
-const { Router } = require("express");
-const {userModel, purchaseModel} = require("../db");
-const bcrypt = require("bcrypt");
-const userRouter = Router();    
-const z = require('zod');
-const jwt = require('jsonwebtoken');
-// const {JWT_USER_PASSWORD} = require("../config");
-const JWT_USER_PASSWORD = "user123";
+// Import the Router object from the express module to create route handlers
+const {Router} = require("express");
 
+// Create a new instance of the Router for defining user-related routes
+const userRouter = Router();
 
-//post router for user to signup
-userRouter.post("/signup", async function (req, res) {
-    //input validation by zod
-    const requireBody = z.object({
+// Import the required dependencies 
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const z = require("zod");
+const { userModel } = require("../db");
+
+const {JWT_USER_PASSWORD} = require("../config");
+const { userMiddleware } = require("../middleware/user");
+
+// Post router for user to Signup
+userRouter.post("/signup", async function(req, res){      
+
+    //input validation using zod 
+    const requiredBody = z.object({
         email: z.string().min(3).max(100).email(),
-        password: z.string().min(6).max(100),
+        password: z.string().min(3).max(100),
         firstName: z.string().min(3).max(30),
-        lastName: z.string().min(3).max(30)
-    })
+        lastName: z.string().min(3).max(30),
+    });
 
-    //parse the requireBody using the requireBody.safeParse() method to validate the data format
-    const parsedDataSuccess = requireBody.safeParse(req.body);
+    // Parse the request body using the requireBody.safeParse() method to validate the data format
+    // "safe" parsing (doesn't throw error if validation fails)
+    const parsedDataSuccess = requiredBody.safeParse(req.body);         
 
-    //If data is not correct then return this error
-    if(!parsedDataSuccess.success){
+    //If data is not correct then yeh response return kr do
+    if(!parsedDataSuccess.success){                     
         return res.json({
-            message: "incorrect format",
+            message: "Incorrect Format",
             error: parsedDataSuccess.error
         })
     }
 
-    //extracting validated email, password, firstName and lastName from the request body
+    // Extract validated email, password, firstName, and lastName from the request body
     const {email, password, firstName, lastName} = req.body;
 
-    //hash the users password using the bcrypt with a salt rounds of 5
-    const hashedPassword = await bcrypt.hash(password, 5);
-
-    //creating a new user in the database
+    // Hash the user's password using bcrypt with a salt rounds of 5
+    const hashedPassword = await bcrypt.hash(password, 5)
+    
+    // Creating a new user in the database
     try{
+        // Create a new user entry with the provided email, hashed password, firstName, lastName
         await userModel.create({
             email,
             password: hashedPassword,
-            firstName, 
-            lastName,
+            firstName,
+            lastName,   
         });
-    }
-    catch(e){
-        //if there is an error during in user creation, return an error message
+    } catch(e){
+        // If there is an error during user creation, return a error message
         return res.status(400).json({
-            message: "you are already signed up"
-        })
-    } 
-})
-
-//POST router for user signin 
-userRouter.post("/signin",async function (req, res) {
-    //define the schema for validating the request body data using zod
-    const requireBody = z.object({
-        email: z.string().email(),
-        password: z.string().min(6),
-    });
-
-    //parse and validate the incoming request body data
-    const parsedDataSuccess = requireBody.safeParse(req.body);
-
-    //if validation fails throw an error with validation error details
-    if(!parsedDataSuccess.success){
-        return res.json({
-            message:"Incorrect Data Format",
-            error: parsedDataSuccess.error
+            // Provide a message indicating signup failure
+            message: "You are already signup",
         });
     }
+    // Send a success response back to client indicating successfully singup
+    res.json({
+        message: "Signed up Successfull"
+    });
+});
 
-    //extract validated email and password
-    const {email, password} = req.body;
+// POST route for user signin
+userRouter.post("/signin",async function(req, res){
 
-    // find the user in the database 
+    // Define the schema for validating the request body data using zod
+    const requireBody = z.object({
+
+        // Email must be a valid email format
+        email: z.string().email(),
+
+        // Password must be at least 6 character
+        password: z.string().min(6)
+    });
+    // Parse adnd validate the incomng request body data
+    const parsedDataWithSuccess = requireBody.safeParse(req.body);
+
+    // If validation fails, return a error with the validation error details
+    if(!parsedDataWithSuccess.success){
+        return res.json({
+            message: "Incorrect Data Fotrmat",
+            error: parsedDataWithSuccess.error,
+        });
+    };
+
+    // Extract validated email and password from the body
+    const { email, password } = req.body
     const user = await userModel.findOne({
         email: email,
     });
 
-    //if the user is not found return a error indicating incorrect credentials 
+    // If the user is not found, return a error indicating incorrect credentials
     if(!user){
         return res.status(403).json({
-            message: "Incorrect Credentials !",
+            message:"Incorrect Credentials !"
         });
     }
 
-    //compare the provided password with the stored hashed password using bcrypt
+    // Compare the provided password with the stored hashed password using bcrypt
     const passwordMatch = await bcrypt.compare(password, user.password);
 
-    //if password matched, create a jwt token and send it to the client 
+    // If the password matches, create a jwt token and send it to the client
     if(passwordMatch){
-        //create a jwt token using the jwt.sign() method
+
+        // Create a jwt token using the jwt.sign() method
         const token = jwt.sign({
-            id: user._id,
-        },JWT_USER_PASSWORD)
+            id: user._id
+        }, JWT_USER_PASSWORD);
 
-        //send the generated token to the client
+        // Send the generated token back to client
         res.json({
-            token: token,
-        })
-    }
-    else{
-        // if password doesn't match 
+            token:token,
+        });
+
+    }else{
+        // If the password does not match, return a error indicating the invalid credentials
         res.status(403).json({
-            //error message for failed password credentials
-            message: "invalid credentials!"
+            // Error message for failed password comparison
+            message:"Invalid credentials!"
         })
     }
-
-    // const{email,password} = req.body;
-
-    // const user = await userModel.findOne({
-    //     email:email,
-    //     password:password
-    // })
-
-    // if(user){
-    //     const token = jwt.sign({
-    //         id:user._id
-    //     },JWT_USER_PASSWORD);
-
-    //     res.json({
-    //         token:token
-    //     })
-    // }
-    // else{
-    //     res.status(403).json({
-    //         message:"incorrect credentials"
-    //     })
-    // }
-
-
 });
 
+// Define the GET route
+userRouter.get("/purchases", userMiddleware, async function(req,res) {
+    const userId = req.userId;
+    const purchases = await purchaseModel.find({
+        userId: userId,
+    })
 
-//GET route for purchases of user
-// userRouter.get("/purchases",userMiddleware,async function (req, res) {
-//     const userId = req.userId;
-//     const purchases = await purchaseModel.find({
-//         userId: userId,
-//     })
+    if(!purchases){
+        return res.status(404).json({
+            // Error message for no purchases found
+            message:"No purchases found",
+        });
+    }
 
-//     if(!purchases){
-//         return res.status(404).json({
-//             message: "No purchases found",
-//         });
-//     }
+    // If purchases are found, extract the courseIds from the found purchases
+    const purchasesCourseIds = purchases.map((purchase) => purchase.courseId);
 
-//     //if purchases are found, extract the courseIds from the found purchases
-//     const purchasesCourseIds = purchases.map((purchase) => purchase.courseId);
+    // Find all course details associated with the courseIds
+    const courseData = await courseModel.find({
+        _id: {$in:purchasesCourseIds}, 
+    });
 
-//     //find all course details associated with the courseIds 
-//     const courseData = await courseModel.find({
-//         _id: {$in:purchasesCourseIds},
-//     });
-
-//     //send the purchases and corresponding course details back to the client 
-//     res.status(200).json({
-//         purchases,
-//         courseData,
-//     });
-// });
+    // Send the purchases and corresponding course details back to the client
+    res.status(200).json({
+        purchases,
+        courseData,
+    });
+});
 
 
 
 module.exports = {
     userRouter: userRouter
-}
+};

@@ -28,17 +28,19 @@ A backend project for a course selling website built using **Node.js**, **Expres
 
 ### Admin
 - `POST /admin/signup`
-- `POST /admin/login`
-- `POST /admin/courses`
-- `PUT /admin/courses/:id`
-- `GET /admin/courses`
+- `POST /admin/signin`
+- `POST /admin/course`
+- `PUT /admin/courses`
+- `GET /admin/course/bulk`
+
+### Course
+- `POST /course/purchase`
+- `GET /course/preview`
 
 ### User
-- `POST /users/signup`
-- `POST /users/login`
-- `GET /users/courses`
-- `POST /users/courses/:courseId`
-- `GET /users/purchasedCourses`
+- `POST /user/signup`
+- `POST /user/signin`
+- `GET /user/purchases`
 
 ---
 
